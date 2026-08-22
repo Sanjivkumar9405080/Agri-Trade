@@ -43,6 +43,15 @@ app.use("/api/farmer", farmerRoutes);
 app.use("/api/consumer", consumerRoutes);
 app.use("/api/profile", profileRoutes);
 
+// Global Error Handling Middleware
+app.use((err, req, res, next) => {
+    console.error("Unhandled Server Error:", err);
+    res.status(500).json({
+        message: "Server error",
+        error: err.message || "An unexpected error occurred"
+    });
+});
+
 const PORT = process.env.PORT || 5000;
 
 if (!process.env.VERCEL) {
