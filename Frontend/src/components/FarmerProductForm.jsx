@@ -10,7 +10,7 @@ import { uploadImageToCloudinary } from "../services/UploadService";
 function FarmerProductForm({ isEdit = false }) {
   const { id } = useParams();
   const navigate = useNavigate();
-
+  
   const [formData, setFormData] = useState({
     name: "",
     category: "Wheat",
@@ -21,12 +21,12 @@ function FarmerProductForm({ isEdit = false }) {
     location: "",
     image: ""
   });
-
+  
   const [loading, setLoading] = useState(isEdit);
   const [submitting, setSubmitting] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [error, setError] = useState("");
-
+  
   const categories = [
     "Wheat",
     "Rice",
@@ -39,7 +39,7 @@ function FarmerProductForm({ isEdit = false }) {
     "Oilseeds",
     "Other"
   ];
-
+      
   const units = [
     { label: "Kilogram (kg)", value: "kg" },
     { label: "Quintal", value: "quintal" },
