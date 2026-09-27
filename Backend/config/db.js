@@ -3,16 +3,18 @@ const mongoose = require("mongoose");
 let isConnected = false;
 
 const connectDB = async () => {
-    if (isConnected || mongoose.connection.readyState >= 1) {
+    if (mongoose.connection.readyState === 1) {
         return;
     }
-    if (!process.env.MONGO_URI) {
-        console.warn("MONGO_URI environment variable is missing.");
+    const uri = process.env.MONGO_URI || process.env.MONGODB_URI;
+    if (!uri) {
+        console.warn("MONGO_URI / MONGODB_URI environment variable is missing.");
         return;
     }
     try {
-        await mongoose.connect(process.env.MONGO_URI.trim());
-        isConnected = true;
+        await mongoose.connect(uri.trim(), {
+            serverSelectionTimeoutMS: 5000,
+        });
         console.log("MongoDB Connected");
     } catch (error) {
         console.error("MongoDB connection failed:", error.message);

@@ -1,4 +1,4 @@
-const Product = require("../model/Product");
+const Product = require("../model/product");
 
 // =====================================
 // CREATE PRODUCT (Farmer Only)
