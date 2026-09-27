@@ -5,8 +5,7 @@ import FarmerProfileModal from "../components/FarmerProfileModal";
 import ImageModal from "../components/ImageModal";
 
 function ConsumerDashboard() {
-
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
   const navigate = useNavigate();
 
   const [products, setProducts] = useState([]);
@@ -14,438 +13,327 @@ function ConsumerDashboard() {
   const [error, setError] = useState("");
   const [selectedFarmer, setSelectedFarmer] = useState(null);
   const [previewImageModal, setPreviewImageModal] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
-  // Fetch products
   useEffect(() => {
-
     const fetchProducts = async () => {
-
       try {
-
+        setLoading(true);
         const data = await getProducts();
-
-        console.log("Products API:", data);
-
         setProducts(data.products || []);
-
       } catch (err) {
-
         console.error("Products Error:", err);
-
-        setError("Unable to load products");
-
+        setError("Unable to load products. Please check connection.");
       } finally {
-
         setLoading(false);
-
       }
-
     };
-
     fetchProducts();
-
   }, []);
 
-
-  // Logout
   const handleLogout = () => {
-
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-
     navigate("/home");
-
   };
 
+  const closeSidebar = () => {
+    setMobileSidebarOpen(false);
+  };
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    navigate(`/products?search=${encodeURIComponent(searchQuery)}`);
+  };
 
   return (
-
     <div className="dashboard-page">
+      {/* Mobile Topbar */}
+      <div className="dashboard-mobile-topbar">
+        <Link to="/home" className="mobile-dashboard-logo">
+          🌾 AgriTrade
+        </Link>
+        <button
+          className="dashboard-mobile-menu-btn"
+          onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+          aria-label="Toggle Dashboard Menu"
+        >
+          {mobileSidebarOpen ? "✕" : "☰ Menu"}
+        </button>
+      </div>
+
+      {/* Mobile Backdrop */}
+      {mobileSidebarOpen && (
+        <div
+          className="dashboard-backdrop"
+          onClick={closeSidebar}
+          aria-hidden="true"
+        />
+      )}
 
       {/* ================= SIDEBAR ================= */}
-
-      <aside className="sidebar">
-
-        <div className="dashboard-logo">
-          🌾 AgriTrade
+      <aside className={`sidebar ${mobileSidebarOpen ? "open" : ""}`}>
+        <div className="sidebar-header">
+          <Link to="/home" className="dashboard-logo" style={{ textDecoration: "none" }}>
+            🌾 AgriTrade
+          </Link>
+          <button
+            className="sidebar-close-btn"
+            onClick={closeSidebar}
+            aria-label="Close sidebar"
+          >
+            ✕
+          </button>
         </div>
 
+        <div className="sidebar-user-preview consumer-preview">
+          <div className="sidebar-avatar consumer-avatar">🛒</div>
+          <div className="sidebar-user-details">
+            <span className="sidebar-user-name">{user?.name || "Consumer"}</span>
+            <span className="sidebar-user-role">🛒 Consumer Account</span>
+          </div>
+        </div>
 
         <nav>
-
-          <Link to="/home" style={{ color: "#166534", fontWeight: "600" }}>
-            ← Back to Home
+          <Link to="/home" className="sidebar-nav-item" onClick={closeSidebar}>
+            <span>🏠</span> Home
           </Link>
 
-          <Link
-            to="/consumer-dashboard"
-            className="active"
-          >
-            🏠 Dashboard
+          <Link to="/consumer-dashboard" className="sidebar-nav-item active" onClick={closeSidebar}>
+            <span>📊</span> Dashboard
           </Link>
 
-
-          <Link to="/products">
-            🛒 Browse Products
+          <Link to="/products" className="sidebar-nav-item" onClick={closeSidebar}>
+            <span>🛒</span> Browse Products
           </Link>
 
-          <Link to="/rentals">
-            🚜 Rent Equipment
+          <Link to="/rentals" className="sidebar-nav-item" onClick={closeSidebar}>
+            <span>🚜</span> Machinery Rentals
           </Link>
 
-          <Link to="/about">
-            ℹ️ About Us
+          <Link to="/about" className="sidebar-nav-item" onClick={closeSidebar}>
+            <span>ℹ️</span> About AgriTrade
           </Link>
 
-          <Link to="/profile">
-            👤 Profile
+          <Link to="/profile" className="sidebar-nav-item" onClick={closeSidebar}>
+            <span>👤</span> My Profile
           </Link>
-
         </nav>
-        <button
-  className="logout-btn"
-  onClick={handleLogout}
->
-  Logout
-</button>
 
-
- 
+        <div className="sidebar-footer">
+          <button
+            className="logout-btn"
+            onClick={handleLogout}
+          >
+            🚪 Logout
+          </button>
+        </div>
       </aside>
 
-
       {/* ================= MAIN CONTENT ================= */}
-
       <main className="dashboard-content">
-
-
         {/* HEADER */}
-
         <header className="dashboard-header">
-
           <div>
-
-            <h1>
-              Hello, {user?.name || "Consumer"} 👋
-            </h1>
-
+            <h1>Hello, {user?.name || "Consumer"}! 👋</h1>
             <p>
-              Find fresh products directly from farmers.
+              Discover fresh harvest, organic grains and machinery directly from local farmers.
             </p>
-
           </div>
 
-
-          <div className="user-badge">
-            🛒 Consumer
+          <div className="user-badge consumer-badge">
+            <span className="badge-dot-blue"></span>
+            🛒 Buyer Account
           </div>
-
         </header>
 
-
-        {/* ================= SEARCH ================= */}
-
-        <div className="dashboard-search">
-
-          <span>🔍</span>
-
-          <input
-            type="text"
-            placeholder="Search rice, wheat, vegetables..."
-          />
-
-        </div>
-
-
-        {/* ================= CATEGORIES ================= */}
-
-        <section className="dashboard-section">
-
-          <div className="section-title">
-
-            <h2>
-              Explore Categories
-            </h2>
-
+        {/* SEARCH BAR */}
+        <form onSubmit={handleSearchSubmit} className="dashboard-search-form">
+          <div className="dashboard-search">
+            <span className="search-icon">🔍</span>
+            <input
+              type="text"
+              placeholder="Search fresh wheat, basmati rice, vegetables, fruits..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <button type="submit" className="search-submit-btn">
+              Search Produce
+            </button>
           </div>
+        </form>
 
+        {/* QUICK CATEGORIES */}
+        <section className="dashboard-section">
+          <div className="section-title">
+            <h2>Explore Categories</h2>
+            <Link to="/products" className="view-all-link">
+              View All Categories →
+            </Link>
+          </div>
 
           <div className="consumer-categories">
-
-            <div className="consumer-category">
-              🌾
-              <span>Grains</span>
-            </div>
-
-
-            <div className="consumer-category">
-              🥔
-              <span>Vegetables</span>
-            </div>
-
-
-            <div className="consumer-category">
-              🍎
-              <span>Fruits</span>
-            </div>
-
-
-            <div className="consumer-category">
-              🌱
-              <span>Seeds</span>
-            </div>
-
-          </div>
-
-        </section>
-
-
-        {/* ================= PRODUCTS ================= */}
-
-        <section className="dashboard-section">
-
-
-          <div className="section-title">
-
-            <div>
-
-              <h2>
-                Fresh From Farmers
-              </h2>
-
-              <p>
-                Buy directly without middlemen.
-              </p>
-
-            </div>
-
-
-            <Link to="/products">
-              View All →
+            <Link to="/products" className="consumer-category" style={{ textDecoration: "none", color: "inherit" }}>
+              <span className="cat-icon">🌾</span>
+              <div>
+                <strong>Grains & Pulses</strong>
+                <small>Wheat, Rice, Dal</small>
+              </div>
             </Link>
 
+            <Link to="/products" className="consumer-category" style={{ textDecoration: "none", color: "inherit" }}>
+              <span className="cat-icon">🥕</span>
+              <div>
+                <strong>Vegetables</strong>
+                <small>Farm-fresh Produce</small>
+              </div>
+            </Link>
+
+            <Link to="/products" className="consumer-category" style={{ textDecoration: "none", color: "inherit" }}>
+              <span className="cat-icon">🍎</span>
+              <div>
+                <strong>Seasonal Fruits</strong>
+                <small>Naturally Ripened</small>
+              </div>
+            </Link>
+
+            <Link to="/products" className="consumer-category" style={{ textDecoration: "none", color: "inherit" }}>
+              <span className="cat-icon">🌱</span>
+              <div>
+                <strong>Seeds & Organic</strong>
+                <small>High Quality Inputs</small>
+              </div>
+            </Link>
           </div>
+        </section>
 
+        {/* FRESH FROM FARMERS */}
+        <section className="dashboard-section">
+          <div className="section-title">
+            <div>
+              <h2>Fresh From Local Farmers</h2>
+              <p>Direct harvests available for immediate delivery with zero broker cut</p>
+            </div>
 
-          {/* Loading */}
+            <Link to="/products" className="view-all-link">
+              Browse All ({products.length}) →
+            </Link>
+          </div>
 
           {loading && (
-
-            <div className="empty-state">
-
-              <div>⏳</div>
-
-              <h3>
-                Loading products...
-              </h3>
-
+            <div className="dashboard-loading">
+              <span>⏳</span> Loading fresh products...
             </div>
-
           )}
-
-
-          {/* Error */}
 
           {!loading && error && (
-
-            <div className="empty-state">
-
-              <div>⚠️</div>
-
-              <h3>
-                Something went wrong
-              </h3>
-
-              <p>
-                {error}
-              </p>
-
+            <div className="empty-state error-box">
+              <div className="empty-icon">⚠️</div>
+              <h3>Unable to load products</h3>
+              <p>{error}</p>
             </div>
-
           )}
 
-
-          {/* No Products */}
-
-          {!loading &&
-            !error &&
-            products.length === 0 && (
-
-              <div className="empty-state">
-
-                <div>🌱</div>
-
-                <h3>
-                  No products available
-                </h3>
-
-                <p>
-                  Farmers haven't added any products yet.
-                </p>
-
-              </div>
-
+          {!loading && !error && products.length === 0 && (
+            <div className="empty-state">
+              <div className="empty-icon">🌱</div>
+              <h3>No products available right now</h3>
+              <p>Farmers will post new listings soon. Check back shortly!</p>
+            </div>
           )}
 
-
-          {/* Products */}
-
-          {!loading &&
-            !error &&
-            products.length > 0 && (
-
-              <div className="product-preview-grid">
-
-                {products.slice(0, 3).map((product) => (
-
+          {!loading && !error && products.length > 0 && (
+            <div className="product-preview-grid">
+              {products.slice(0, 3).map((product) => (
+                <div className="product-preview-card" key={product._id}>
                   <div
-                    className="product-preview"
-                    key={product._id}
+                    className="product-preview-image"
+                    onClick={() => product.image && setPreviewImageModal({ url: product.image, title: product.name })}
+                    style={{ cursor: product.image ? "pointer" : "default" }}
+                    title={product.image ? "Click to view image" : ""}
                   >
-
-
-                    {/* Product Icon / Image */}
-
-                    <div
-                      className="product-icon"
-                      onClick={() => product.image && setPreviewImageModal({ url: product.image, title: product.name })}
-                      style={{ cursor: product.image ? "pointer" : "default" }}
-                      title={product.image ? "Click to enlarge image" : ""}
-                    >
-                      {product.image ? (
-                        <img src={product.image} alt={product.name} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "10px" }} />
-                      ) : (
-                        "🌾"
-                      )}
-                    </div>
-
-
-                    {/* Product Name */}
-
-                    <h3>
-                      {product.name}
-                    </h3>
-
-
-                    {/* Description */}
-
-                    <p>
-                      {product.description ||
-                        "Fresh agricultural product"}
-                    </p>
-
-
-                    {/* Price */}
-
-                    <strong>
-                      ₹{product.price} /{" "}
-                      {product.unit || "kg"}
-                    </strong>
-
-
-                    {/* Quantity */}
-
-                    {product.quantity !== undefined && (
-
-                      <p>
-                        Available:{" "}
-                        {product.quantity}{" "}
-                        {product.unit || "kg"}
-                      </p>
-
-                    )}
-
-
-                    {/* Location */}
-
-                    {product.location && (
-
-                      <p>
-                        📍 {product.location}
-                      </p>
-
-                    )}
-
-
-                    {/* Farmer Details */}
-
-                    {product.farmer && (
-
-                      <p style={{ marginTop: "6px", fontSize: "13px", color: "#475569" }}>
-                        👨‍🌾 Seller: <strong>{product.farmer.name || "Farmer"}</strong>
-                      </p>
-
-                    )}
-
-
-                    {/* View Product / Seller Profile */}
-
-                    {product.farmer ? (
-
-                      <button
-                        type="button"
-                        onClick={() => setSelectedFarmer(product.farmer)}
-                        className="primary-btn product-btn"
-                        style={{ marginTop: "10px", width: "100%", cursor: "pointer", border: "none" }}
-                      >
-                        👤 View Profile & Contact
-                      </button>
-
+                    {product.image ? (
+                      <img src={product.image} alt={product.name} />
                     ) : (
-
-                      <Link
-                        to="/products"
-                        className="primary-btn product-btn"
-                      >
-                        Browse Products
-                      </Link>
-
+                      <span className="preview-fallback-icon">🌾</span>
                     )}
-
+                    <span className="preview-category-badge">{product.category || "Crop"}</span>
                   </div>
 
-                ))}
+                  <div className="product-preview-body">
+                    <h3 className="preview-title">{product.name}</h3>
 
-              </div>
+                    <p className="preview-description">
+                      {product.description || "Fresh harvest directly from verified farmer."}
+                    </p>
 
+                    <div className="preview-price-row">
+                      <div className="preview-price">
+                        ₹{product.price}
+                        <span> / {product.unit || "kg"}</span>
+                      </div>
+                      <span className="preview-stock">
+                        {product.quantity > 0 ? `${product.quantity} ${product.unit || "kg"} left` : "Out of stock"}
+                      </span>
+                    </div>
+
+                    {product.location && (
+                      <p className="preview-location">
+                        📍 {product.location}
+                      </p>
+                    )}
+
+                    {product.farmer && (
+                      <div className="preview-farmer-row">
+                        <span>👨‍🌾 {product.farmer.name || "Farmer"}</span>
+                      </div>
+                    )}
+
+                    <div className="preview-actions">
+                      <Link
+                        to={`/products/${product._id}`}
+                        className="primary-btn preview-action-btn"
+                        style={{ textDecoration: "none", textAlign: "center" }}
+                      >
+                        View Crop Details →
+                      </Link>
+
+                      {product.farmer && (
+                        <button
+                          type="button"
+                          onClick={() => setSelectedFarmer(product.farmer)}
+                          className="secondary-btn preview-farmer-btn"
+                          title="View farmer profile"
+                        >
+                          👤 Seller
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
-
         </section>
 
-
-        {/* ================= RENTAL ================= */}
-
+        {/* RENTALS BANNER */}
         <section className="rental-banner">
-
-          <div>
-
-            <span>
-              🚜 FARMING EQUIPMENT
-            </span>
-
-
-            <h2>
-              Need farming equipment?
-            </h2>
-
-
+          <div className="rental-banner-content">
+            <span className="rental-banner-tag">🚜 FARM MACHINERY SHARING</span>
+            <h2>Need Tractors, Harvesters or Pumps?</h2>
             <p>
-              Find tractors and agricultural equipment
-              available for rent near you.
+              Discover tractors, combine harvesters, rotavators, and irrigation pumps available for affordable rent near your area.
             </p>
-
           </div>
 
-
-          <Link to="/rentals">
-            Explore Rentals →
+          <Link to="/rentals" className="rental-banner-btn">
+            Explore Machinery Rentals →
           </Link>
-
         </section>
-
-
       </main>
 
+      {/* FARMER PROFILE MODAL */}
       {selectedFarmer && (
         <FarmerProfileModal
           farmer={selectedFarmer}
@@ -459,11 +347,8 @@ function ConsumerDashboard() {
         title={previewImageModal?.title}
         onClose={() => setPreviewImageModal(null)}
       />
-
     </div>
-
   );
-
 }
 
 export default ConsumerDashboard;

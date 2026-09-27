@@ -5,6 +5,8 @@ import {
   updateProfile
 } from "../services/ProfileService";
 import { uploadImageToCloudinary } from "../services/UploadService";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 
 function Profile() {
 
@@ -271,8 +273,10 @@ function Profile() {
 
 
   return (
+    <div className="profile-page-wrapper">
+      <Navbar />
 
-    <div className={`profile-page ${user.role}-theme`}>
+      <div className={`profile-page ${user.role}-theme`}>
 
       {/* ================================= */}
       {/* HEADER */}
@@ -762,11 +766,9 @@ function Profile() {
               className={`save-profile-btn ${user.role}`}
               disabled={saving}
             >
-
               {saving
                 ? "Saving..."
                 : "Save Changes"}
-
             </button>
 
           </form>
@@ -776,6 +778,9 @@ function Profile() {
       </div>
 
     </div>
+
+    <Footer />
+  </div>
   );
 }
 

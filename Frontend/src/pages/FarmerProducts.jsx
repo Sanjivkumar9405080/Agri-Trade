@@ -4,6 +4,8 @@ import {
   getFarmerProducts,
   deleteProduct
 } from "../services/FarmerProductService";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 import ImageModal from "../components/ImageModal";
 
 function FarmerProducts() {
@@ -30,7 +32,7 @@ function FarmerProducts() {
       console.error(err);
       setError(
         err.response?.data?.message ||
-        "Unable to load your products"
+        "Unable to load your products. Please check server connection."
       );
     } finally {
       setLoading(false);
@@ -58,7 +60,7 @@ function FarmerProducts() {
       await deleteProduct(deleteProductTarget._id);
       
       setProducts(products.filter((p) => p._id !== deleteProductTarget._id));
-      setMessage("Product deleted successfully");
+      setMessage("Product listing deleted successfully");
       setDeleteProductTarget(null);
     } catch (err) {
       console.error(err);
@@ -72,210 +74,190 @@ function FarmerProducts() {
   };
 
   return (
-    <div className="products-page">
-      {/* HEADER */}
-      <div className="products-header">
-        <div>
-          <Link to="/farmer-dashboard" className="back-btn">
-            ← Dashboard
-          </Link>
-          <h1 style={{ marginTop: "12px" }}>My Products</h1>
-          <p>
-            Manage the products you are selling directly to consumers.
-          </p>
-        </div>
+    <div className="farmer-products-page-wrapper">
+      <Navbar />
 
-        <Link to="/farmer/products/create" className="primary-btn" style={{ textDecoration: "none" }}>
-          + Add Product
-        </Link>
-      </div>
+      <main className="products-page">
+        <div className="products-container">
+          {/* HEADER */}
+          <div className="products-header">
+            <div>
+              <Link to="/farmer-dashboard" className="back-btn">
+                ← Back to Dashboard
+              </Link>
+              <h1 style={{ marginTop: "14px" }}>My Crop Listings</h1>
+              <p>
+                Manage the crops you are selling directly to consumers and retailers.
+              </p>
+            </div>
 
-      {/* MESSAGES */}
-      {message && (
-        <div className="success-message" style={{ padding: "14px", backgroundColor: "#dcfce7", color: "#166534", borderRadius: "10px", marginBottom: "20px" }}>
-          ✅ {message}
-        </div>
-      )}
-
-      {error && (
-        <div className="error-message" style={{ padding: "14px", backgroundColor: "#fef2f2", color: "#b91c1c", borderRadius: "10px", marginBottom: "20px" }}>
-          ⚠️ {error}
-        </div>
-      )}
-
-      {/* PRODUCTS GRID */}
-      <div className="products-section">
-        {loading ? (
-          <div className="empty-state">
-            <div>⏳</div>
-            <h3>Loading your products...</h3>
-          </div>
-        ) : products.length === 0 ? (
-          <div className="empty-state">
-            <div>🌾</div>
-            <h3>No products listed yet</h3>
-            <p>
-              Add your first farm product to start selling directly to consumers without middlemen.
-            </p>
             <Link to="/farmer/products/create" className="primary-btn" style={{ textDecoration: "none" }}>
-              + Add Product
+              + Add New Crop
             </Link>
           </div>
-        ) : (
-          <div className="products-grid">
-            {products.map((product) => {
-              const isAvailable = product.quantity > 0 && product.status !== "Out of Stock";
 
-              return (
-                <div className="product-card" key={product._id}>
-                  {/* Product Image */}
-                  <div
-                    className="product-image"
-                    onClick={() => product.image && setPreviewImageModal({ url: product.image, title: product.name })}
-                    style={{ cursor: product.image ? "pointer" : "default" }}
-                    title={product.image ? "Click to enlarge image" : ""}
-                  >
-                    {product.image ? (
-                      <img src={product.image} alt={product.name} />
-                    ) : (
-                      <span>🌾</span>
-                    )}
-                  </div>
+          {/* MESSAGES */}
+          {message && (
+            <div className="success-message">
+              ✅ {message}
+            </div>
+          )}
 
-                  {/* Product Details */}
-                  <div className="product-card-content">
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-                      <span className="product-category">
-                        {product.category || "Grains"}
-                      </span>
+          {error && (
+            <div className="error-message">
+              ⚠️ {error}
+            </div>
+          )}
 
-                      <span style={{
-                        display: "inline-block",
-                        padding: "4px 10px",
-                        borderRadius: "12px",
-                        fontSize: "12px",
-                        fontWeight: "700",
-                        backgroundColor: isAvailable ? "#dcfce7" : "#fee2e2",
-                        color: isAvailable ? "#166534" : "#991b1b"
-                      }}>
-                        {isAvailable ? "Available" : "Out of Stock"}
-                      </span>
-                    </div>
+          {/* PRODUCTS SECTION */}
+          <div className="products-section">
+            {loading ? (
+              <div className="products-message">
+                <div className="message-icon">⏳</div>
+                <h3>Loading your crop listings...</h3>
+                <p>Retrieving your inventory from database.</p>
+              </div>
+            ) : products.length === 0 ? (
+              <div className="products-message empty-box">
+                <div className="message-icon">🌾</div>
+                <h3>No crop listings yet</h3>
+                <p>
+                  List your first harvest to start receiving inquiries and orders directly from buyers.
+                </p>
+                <Link
+                  to="/farmer/products/create"
+                  className="primary-btn"
+                  style={{ textDecoration: "none", display: "inline-block", marginTop: "16px" }}
+                >
+                  + Add Your First Crop
+                </Link>
+              </div>
+            ) : (
+              <div className="products-grid">
+                {products.map((product) => {
+                  const isAvailable = product.quantity > 0 && product.status !== "Out of Stock";
 
-                    <h2>{product.name}</h2>
-
-                    <p className="product-description">
-                      {product.description}
-                    </p>
-
-                    <div className="product-price">
-                      ₹{product.price}
-                      <span> / {product.unit || "kg"}</span>
-                    </div>
-
-                    <div className="product-info">
-                      <span>Available: <strong>{product.quantity} {product.unit || "kg"}</strong></span>
-                    </div>
-
-                    {product.location && (
-                      <div className="product-location">
-                        📍 {product.location}
+                  return (
+                    <div className="product-card" key={product._id}>
+                      {/* Product Image */}
+                      <div
+                        className="product-image"
+                        onClick={() => product.image && setPreviewImageModal({ url: product.image, title: product.name })}
+                        style={{ cursor: product.image ? "pointer" : "default" }}
+                        title={product.image ? "Click to view full image" : ""}
+                      >
+                        {product.image ? (
+                          <img src={product.image} alt={product.name} />
+                        ) : (
+                          <span className="product-fallback-icon">🌾</span>
+                        )}
+                        <span className="product-category-pill">
+                          {product.category || "Produce"}
+                        </span>
                       </div>
-                    )}
 
-                    {/* Action Buttons */}
-                    <div style={{ display: "flex", gap: "10px", marginTop: "16px" }}>
-                      <button
-                        onClick={() => navigate(`/farmer/products/${product._id}/edit`)}
-                        style={{
-                          flex: 1,
-                          padding: "10px",
-                          backgroundColor: "#f1f5f9",
-                          color: "#334155",
-                          border: "1px solid #cbd5e1",
-                          borderRadius: "8px",
-                          fontWeight: "600",
-                          cursor: "pointer"
-                        }}
-                      >
-                        ✏️ Edit
-                      </button>
+                      {/* Product Details */}
+                      <div className="product-card-content">
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                          <span className="stock-pill">
+                            <span style={{
+                              color: isAvailable ? "#166534" : "#991b1b",
+                              fontWeight: "700"
+                            }}>
+                              ● {isAvailable ? "In Stock" : "Out of Stock"}
+                            </span>
+                          </span>
+                        </div>
 
-                      <button
-                        onClick={() => setDeleteProductTarget(product)}
-                        style={{
-                          padding: "10px 16px",
-                          backgroundColor: "#fef2f2",
-                          color: "#dc2626",
-                          border: "1px solid #fecaca",
-                          borderRadius: "8px",
-                          fontWeight: "600",
-                          cursor: "pointer"
-                        }}
-                      >
-                        🗑️ Delete
-                      </button>
+                        <h2 className="product-name" title={product.name}>{product.name}</h2>
+
+                        <p className="product-description">
+                          {product.description || "Farm-fresh produce listed for direct consumer trade."}
+                        </p>
+
+                        <div className="product-price-row">
+                          <div className="product-price">
+                            ₹{product.price}
+                            <span className="product-price-unit"> / {product.unit || "kg"}</span>
+                          </div>
+                          <span className="product-info-compact">
+                            Stock: <strong>{product.quantity} {product.unit || "kg"}</strong>
+                          </span>
+                        </div>
+
+                        {product.location && (
+                          <div className="product-location">
+                            📍 {product.location}
+                          </div>
+                        )}
+
+                        {/* Action Buttons */}
+                        <div style={{ display: "flex", gap: "10px", marginTop: "16px" }}>
+                          <button
+                            type="button"
+                            onClick={() => navigate(`/farmer/products/${product._id}/edit`)}
+                            className="secondary-btn"
+                            style={{
+                              flex: 1,
+                              padding: "10px",
+                              fontWeight: "600",
+                              cursor: "pointer",
+                              textAlign: "center"
+                            }}
+                          >
+                            ✏️ Edit
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => setDeleteProductTarget(product)}
+                            style={{
+                              padding: "10px 16px",
+                              backgroundColor: "#fef2f2",
+                              color: "#dc2626",
+                              border: "1px solid #fecaca",
+                              borderRadius: "8px",
+                              fontWeight: "600",
+                              cursor: "pointer"
+                            }}
+                            title="Delete this listing"
+                          >
+                            🗑️ Delete
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              );
-            })}
+                  );
+                })}
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </div>
+      </main>
 
       {/* DELETE CONFIRMATION MODAL */}
       {deleteProductTarget && (
-        <div className="modal-overlay" style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: "rgba(0, 0, 0, 0.6)",
-          backdropFilter: "blur(4px)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          zIndex: 1000,
-          padding: "20px"
-        }}>
-          <div style={{
-            backgroundColor: "#ffffff",
-            borderRadius: "16px",
-            maxWidth: "420px",
-            width: "100%",
-            padding: "28px",
-            textAlign: "center",
-            boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)"
-          }}>
-            <div style={{ fontSize: "48px", marginBottom: "12px" }}>⚠️</div>
-            <h2 style={{ fontSize: "20px", color: "#0f172a", marginBottom: "8px" }}>
-              Confirm Delete
-            </h2>
-            <p style={{ color: "#64748b", fontSize: "15px", marginBottom: "24px" }}>
-              Are you sure you want to delete <strong>"{deleteProductTarget.name}"</strong>?
+        <div className="modal-overlay">
+          <div className="modal-card">
+            <span style={{ fontSize: "40px", display: "block", marginBottom: "12px" }}>⚠️</span>
+            <h3 style={{ fontSize: "20px", color: "#0f172a", marginBottom: "8px" }}>Delete Crop Listing?</h3>
+            <p style={{ color: "#64748b", fontSize: "14px", lineHeight: "1.5", marginBottom: "20px" }}>
+              Are you sure you want to remove <strong>"{deleteProductTarget.name}"</strong>? This will permanently delete this listing from the marketplace.
             </p>
 
             <div style={{ display: "flex", gap: "12px" }}>
               <button
+                type="button"
+                className="secondary-btn"
                 onClick={() => setDeleteProductTarget(null)}
                 disabled={deleting}
-                style={{
-                  flex: 1,
-                  padding: "12px",
-                  backgroundColor: "#f1f5f9",
-                  color: "#475569",
-                  border: "none",
-                  borderRadius: "10px",
-                  fontWeight: "600",
-                  cursor: "pointer"
-                }}
+                style={{ flex: 1 }}
               >
                 Cancel
               </button>
 
               <button
+                type="button"
                 onClick={confirmDelete}
                 disabled={deleting}
                 style={{
@@ -284,24 +266,26 @@ function FarmerProducts() {
                   backgroundColor: "#dc2626",
                   color: "#ffffff",
                   border: "none",
-                  borderRadius: "10px",
-                  fontWeight: "600",
-                  cursor: "pointer"
+                  borderRadius: "8px",
+                  fontWeight: "700",
+                  cursor: deleting ? "not-allowed" : "pointer"
                 }}
               >
-                {deleting ? "Deleting..." : "Delete"}
+                {deleting ? "Deleting..." : "Yes, Delete"}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* FULLIMAGE PREVIEW MODAL */}
+      {/* IMAGE PREVIEW MODAL */}
       <ImageModal
         imageUrl={previewImageModal?.url}
         title={previewImageModal?.title}
         onClose={() => setPreviewImageModal(null)}
       />
+
+      <Footer />
     </div>
   );
 }

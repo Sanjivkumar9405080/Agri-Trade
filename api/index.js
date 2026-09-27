@@ -2,13 +2,14 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 
-const connectDB = require("./config/db");
-const authRoutes = require("./routes/authRoutes");
-const farmerRoutes = require("./routes/farmerRoutes");
-const farmerProductRoutes = require("./routes/farmerProductRoutes");
-const consumerRoutes = require("./routes/consumerRoutes");
-const profileRoutes = require("./routes/profileRoutes");
-const uploadRoutes = require("./routes/uploadRoutes");
+const connectDB = require("../Backend/config/db");
+const authRoutes = require("../Backend/routes/authRoutes");
+const farmerRoutes = require("../Backend/routes/farmerRoutes");
+const farmerProductRoutes = require("../Backend/routes/farmerProductRoutes");
+const consumerRoutes = require("../Backend/routes/consumerRoutes");
+const profileRoutes = require("../Backend/routes/profileRoutes");
+const uploadRoutes = require("../Backend/routes/uploadRoutes");
+
 const app = express();
 
 // Allowed origins list
@@ -67,6 +68,7 @@ app.options("*", cors(corsOptions));
 app.use(express.json({ limit: "15mb" }));
 app.use(express.urlencoded({ limit: "15mb", extended: true }));
 
+// Database connection middleware for serverless
 app.use(async (req, res, next) => {
   try {
     await connectDB();
@@ -92,7 +94,7 @@ app.use("/api/farmer", farmerRoutes);
 app.use("/api/consumer", consumerRoutes);
 app.use("/api/profile", profileRoutes);
 
-// Global Error Handling Middleware
+// Global Error Handler
 app.use((err, req, res, next) => {
   console.error("Unhandled Server Error:", err);
   res.status(500).json({
@@ -100,13 +102,5 @@ app.use((err, req, res, next) => {
     error: err.message || "An unexpected error occurred"
   });
 });
-
-const PORT = process.env.PORT || 5000;
-
-if (!process.env.VERCEL) {
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
-}
 
 module.exports = app;

@@ -6,6 +6,8 @@ import {
   updateProduct
 } from "../services/FarmerProductService";
 import { uploadImageToCloudinary } from "../services/UploadService";
+import Navbar from "./Navbar";
+import Footer from "./Footer";
 
 function FarmerProductForm({ isEdit = false }) {
   const { id } = useParams();
@@ -203,25 +205,29 @@ function FarmerProductForm({ isEdit = false }) {
   }
 
   return (
-    <div className="products-page">
-      <div className="products-header">
-        <div>
-          <Link to="/farmer/products" className="back-btn">
-            ← Back to My Products
-          </Link>
-          <h1 style={{ marginTop: "12px" }}>
-            {isEdit ? "Edit Product" : "Sell Your Farm Product"}
-          </h1>
-          <p>
-            {isEdit
-              ? "Update your product listing details below."
-              : "Connect directly with consumers and sell without middlemen."}
-          </p>
-        </div>
-      </div>
+    <div className="farmer-form-wrapper">
+      <Navbar />
 
-      <div style={{ maxWidth: "800px", margin: "0 auto" }}>
-        <div className="add-product-card" style={{ background: "white", padding: "32px", borderRadius: "18px", border: "1px solid #e5e7eb" }}>
+      <main className="products-page">
+        <div className="products-container">
+          <div className="products-header">
+            <div>
+              <Link to="/farmer/products" className="back-btn">
+                ← Back to My Products
+              </Link>
+              <h1 style={{ marginTop: "12px" }}>
+                {isEdit ? "Edit Product" : "Sell Your Farm Product"}
+              </h1>
+              <p>
+                {isEdit
+                  ? "Update your product listing details below."
+                  : "Connect directly with consumers and sell without middlemen."}
+              </p>
+            </div>
+          </div>
+
+          <div style={{ maxWidth: "800px", margin: "0 auto" }}>
+            <div className="add-product-card">
           {error && (
             <div className="error-message" style={{ padding: "14px", backgroundColor: "#fef2f2", color: "#b91c1c", borderRadius: "10px", marginBottom: "20px" }}>
               ⚠️ {error}
@@ -516,6 +522,10 @@ function FarmerProductForm({ isEdit = false }) {
         </div>
       </div>
     </div>
+  </main>
+
+  <Footer />
+</div>
   );
 }
 
